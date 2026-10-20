@@ -259,4 +259,7 @@ if __name__ == "__main__":
     test_acc_mutual_info_without_metric()
     test_bootstrap_internal_no_mp()
     test_dict_metric_uses_custom_aggregation()
+    test_spbleu_task_aggregation()
+    test_chrfpp_task_aggregation()
+    test_chrfpp_includes_word_matches()
     print("All tests passed!")
