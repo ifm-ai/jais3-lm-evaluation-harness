@@ -98,6 +98,15 @@ def bleu(items):
     return sacrebleu.corpus_bleu(preds, refs).score
 
 
+@register_aggregation("spbleu")
+def spbleu(items):
+    """Corpus BLEU using the FLORES-200 SentencePiece tokenizer (0–100)."""
+    refs = list(zip(*items))[0]
+    preds = list(zip(*items))[1]
+    refs, preds = _sacreformat(refs, preds)
+    return sacrebleu.corpus_bleu(preds, refs, tokenize="flores200").score
+
+
 @register_aggregation("chrf")
 def chrf(items):
     """chrF is an evaluation metric for machine translation output based on
@@ -117,6 +126,7 @@ def chrf(items):
     return sacrebleu.corpus_chrf(preds, refs).score
 
 
+@register_aggregation("chrfpp")
 @register_aggregation("chrf++")
 def chrfpp(items):
     """chrF++ is chrF extended with word n-grams, for automatic evaluation of
@@ -384,6 +394,16 @@ def bleu_fn(items):  # This is a passthrough function
 
 
 @register_metric(
+    metric="spbleu",
+    higher_is_better=True,
+    output_type="generate_until",
+    aggregation="spbleu",
+)
+def spbleu_fn(items):  # This is a passthrough function
+    return items
+
+
+@register_metric(
     metric="chrf",
     higher_is_better=True,
     output_type="generate_until",
@@ -392,6 +412,13 @@ def bleu_fn(items):  # This is a passthrough function
 def chrf_fn(items):  # This is a passthrough function
     return items
 
+
+@register_metric(
+    metric="chrfpp",
+    higher_is_better=True,
+    output_type="generate_until",
+    aggregation="chrfpp",
+)
 
 @register_metric(
     metric="chrf++",
@@ -608,6 +635,7 @@ def stderr_for_metric(
         f1_score,
         perplexity,
         bleu,
+        spbleu,
         chrf,
         chrfpp,
         ter,
