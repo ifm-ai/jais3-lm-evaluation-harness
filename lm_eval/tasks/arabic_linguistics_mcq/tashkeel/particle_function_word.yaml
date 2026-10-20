@@ -1,0 +1,8 @@
+include: ../_default_template_yaml
+task: arabic_linguistics_tashkeel_particle_function_word_mcq
+task_alias: "Arabic Linguistic Tashkeel MCQ - Particle Function Word"
+dataset_name: tashkeel
+test_split: particle_function_word
+metadata:
+  version: 1.0
+  category: particle_function_word

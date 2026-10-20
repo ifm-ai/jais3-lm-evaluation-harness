@@ -1,0 +1,8 @@
+include: ../_default_template_yaml
+task: arabic_linguistics_tashkeel_verb_feature_ambiguity_mcq
+task_alias: "Arabic Linguistic Tashkeel MCQ - Verb Feature Ambiguity"
+dataset_name: tashkeel
+test_split: verb_feature_ambiguity
+metadata:
+  version: 1.0
+  category: verb_feature_ambiguity

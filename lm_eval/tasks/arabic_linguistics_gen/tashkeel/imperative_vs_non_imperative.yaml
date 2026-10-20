@@ -1,0 +1,8 @@
+include: ../_default_template_yaml
+task: arabic_linguistics_tashkeel_imperative_vs_non_imperative
+task_alias: "Arabic Linguistic Tashkeel - Imperative vs Non-imperative"
+dataset_name: tashkeel
+test_split: imperative_vs_non_imperative
+metadata:
+  version: 1.0
+  category: imperative_vs_non_imperative

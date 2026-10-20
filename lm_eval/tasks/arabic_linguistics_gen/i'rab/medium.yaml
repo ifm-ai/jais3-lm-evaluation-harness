@@ -1,0 +1,8 @@
+include: ../_default_template_yaml
+task: arabic_linguistics_i'rab_medium
+task_alias: "Arabic Linguistic I'rab - Medium"
+dataset_name: "i'rab"
+test_split: Medium
+metadata:
+  version: 1.0
+  category: Medium

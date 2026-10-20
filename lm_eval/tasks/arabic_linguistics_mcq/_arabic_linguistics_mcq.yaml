@@ -1,0 +1,10 @@
+group: arabic_linguistics_mcq
+group_alias: Arabic Linguistic MCQ
+task:
+  - arabic_linguistics_i'rab_mcq
+  - arabic_linguistics_tashkeel_mcq
+aggregate_metric_list:
+  - metric: acc_norm
+    weight_by_size: true
+metadata:
+  version: 1.0

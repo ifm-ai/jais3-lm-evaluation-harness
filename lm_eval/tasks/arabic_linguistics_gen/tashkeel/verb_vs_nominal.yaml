@@ -1,0 +1,8 @@
+include: ../_default_template_yaml
+task: arabic_linguistics_tashkeel_verb_vs_nominal
+task_alias: "Arabic Linguistic Tashkeel - Verb vs Nominal"
+dataset_name: tashkeel
+test_split: verb_vs_nominal
+metadata:
+  version: 1.0
+  category: verb_vs_nominal

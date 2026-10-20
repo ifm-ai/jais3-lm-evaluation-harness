@@ -1,0 +1,8 @@
+include: ../_default_template_yaml
+task: arabic_linguistics_tashkeel_active_passive_voice
+task_alias: "Arabic Linguistic Tashkeel - Active vs Passive Voice"
+dataset_name: tashkeel
+test_split: active_passive_voice
+metadata:
+  version: 1.0
+  category: active_passive_voice

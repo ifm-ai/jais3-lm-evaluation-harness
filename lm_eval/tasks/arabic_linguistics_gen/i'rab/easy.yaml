@@ -1,0 +1,8 @@
+include: ../_default_template_yaml
+task: arabic_linguistics_i'rab_easy
+task_alias: "Arabic Linguistic I'rab - Easy"
+dataset_name: "i'rab"
+test_split: Easy
+metadata:
+  version: 1.0
+  category: Easy

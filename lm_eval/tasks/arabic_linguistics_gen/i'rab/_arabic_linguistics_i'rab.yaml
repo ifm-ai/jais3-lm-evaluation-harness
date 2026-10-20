@@ -1,0 +1,9 @@
+group: arabic_linguistics_i'rab
+group_alias: Arabic Linguistic I'rab
+task:
+  - arabic_linguistics_i'rab_easy
+  - arabic_linguistics_i'rab_medium
+  - arabic_linguistics_i'rab_difficult
+aggregate_metric_list:
+  - metric: exact_match
+    weight_by_size: true

@@ -1,0 +1,8 @@
+include: ../_default_template_yaml
+task: arabic_linguistics_tashkeel_noun_adjective_ambiguity
+task_alias: "Arabic Linguistic Tashkeel - Noun vs Adjective"
+dataset_name: tashkeel
+test_split: noun_adjective_ambiguity
+metadata:
+  version: 1.0
+  category: noun_adjective_ambiguity

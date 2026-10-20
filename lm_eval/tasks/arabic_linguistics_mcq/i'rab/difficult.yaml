@@ -1,0 +1,8 @@
+include: ../_default_template_yaml
+task: arabic_linguistics_i'rab_difficult_mcq
+task_alias: "Arabic Linguistic I'rab MCQ - Difficult"
+dataset_name: "i'rab"
+test_split: Difficult
+metadata:
+  version: 1.0
+  category: Difficult

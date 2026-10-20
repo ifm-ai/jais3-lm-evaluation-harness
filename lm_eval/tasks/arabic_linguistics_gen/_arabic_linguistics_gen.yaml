@@ -1,0 +1,10 @@
+group: arabic_linguistics_gen
+group_alias: Arabic Linguistic group
+task:
+  - arabic_linguistics_i'rab
+  - arabic_linguistics_tashkeel
+aggregate_metric_list:
+  - metric: exact_match
+    weight_by_size: true
+metadata:
+  version: 1.0
