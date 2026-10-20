@@ -949,8 +949,8 @@ def postprocess_generated_text(
         generation (str): The generated text to be processed.
         stop (list[str] | None): Stop sequence(s) to remove. Text is truncated
             at the first occurrence of any stop sequence.
-        think_end_token (str | None): Token marking end of thinking section. If provided,
-            returns only the text after this token (discarding thinking content).
+        think_end_token (str | None): Regex pattern marking end of thinking section.
+            If provided, returns only the text after the LAST match.
 
     Returns:
         str: The processed generation - text before stop sequences and after thinking sections.
