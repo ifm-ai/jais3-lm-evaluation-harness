@@ -17,17 +17,17 @@ On top of that upstream commit:
 
 ### Tasks from `integrate-upstream` (`56a0f2ac`)
 
-- `05217d4b` — `DiacArMMLU` and `DiacArMMLU_gen`
+- `05217d4b` — `DiacArMMLU` and `DiacArMMLU_gen`. `1fd6e07e` points both at `IFM/Dialectal-Arabic-MMLU_verified`.
 - `3794f8d9` — `arabicmmlu_with_diacritics` and `arabicmmlu_with_diacritics_gen`
-- `0e3b7b0f` — `aradice_gen`
+- `0e3b7b0f` — `aradice_gen`. `3767807c` points the cultural tasks at `IFM/AraDiCE-Culture_verified`.
 - `b1156cb1` — `belebele_gen`
 - `d6949705` — `gpqa_gen`
 - `61d6e70b` — QADI only, from `dialect_id` and `dialect_id_gen` (shared template and `utils.py` included; MADAR left out)
-- `ee1a06a8` — `arab_culture_gen`
+- `ee1a06a8` — `arab_culture_gen`. `9b0fc9b8` points the suite at `IFM/ArabCulture_verified`.
 - `b1ac5923` — `arabic_linguistic`
-- `6210d781` — `ifeval_ar`
+- `6210d781` — `ifeval_ar`. `c3c20f9f` loads `inception42/Arabic-IFEval` at revision `48f2090` instead of a local jsonl.
 - `299785c5` — `ara_ifbench`
-- `afe694b8` — `arabic_gsm8k`
+- `afe694b8` — `arabic_gsm8k`. `9032eec5` points the suite at `IFM/Arabic-gsm8k_verified`.
 - `fcb2eedb` — `aa_lcr` and `aa_lcr_ar`
 
 ---
