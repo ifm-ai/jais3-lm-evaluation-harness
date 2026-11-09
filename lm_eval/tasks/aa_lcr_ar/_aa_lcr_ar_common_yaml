@@ -1,4 +1,4 @@
-custom_dataset: !function utils.load_dataset
+dataset_path: IFM/AA-LCR-1.1-AR
 test_split: test
 output_type: generate_until
 process_docs: !function utils.process_docs

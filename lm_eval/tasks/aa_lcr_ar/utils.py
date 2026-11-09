@@ -1,18 +1,15 @@
-"""AA-LCR Arabic: same prompt construction as the English ``aa_lcr`` task, but the
-questions, answers and documents come from the Arabic translation in DATA_DIR
-instead of the ArtificialAnalysis/AA-LCR HF repo."""
+"""AA-LCR Arabic: same prompt construction as the English ``aa_lcr`` task, with
+questions, answers, and documents loaded from ``IFM/AA-LCR-1.1-AR``."""
 
-import json
 import os
 import unicodedata
+import zipfile
 
-import datasets
+from huggingface_hub import hf_hub_download
 
 
-
-DATA_DIR = "/jais3/data/jais_2/benchmarks/aa_lcr_ar_data"
-QA_FILE = os.path.join(DATA_DIR, "aa_lcr_ar_100_qa_only.json")
-DOCS_DIR = os.path.join(DATA_DIR, "documents")
+REPO = "IFM/AA-LCR-1.1-AR"
+ZIP_FILENAME = "extracted_text/AA-LCR_extracted-text.zip"
 
 _DOC_TEMPLATE = "BEGIN DOCUMENT {i}:\n{doc}\nEND DOCUMENT {i}"
 _PROMPT_TEMPLATE = (
@@ -27,6 +24,12 @@ _PROMPT_TEMPLATE = (
 
 
 def _norm_key(s: str) -> str:
+    """Recover the real UTF-8 filename (zipfile decodes unflagged names as cp437)
+    and NFC-normalize so combining vs precomposed chars match the CSV."""
+    try:
+        s = s.encode("cp437").decode("utf-8")
+    except (UnicodeEncodeError, UnicodeDecodeError):
+        pass
     return unicodedata.normalize("NFC", s).strip()
 
 
@@ -34,36 +37,39 @@ _DOC_INDEX = None
 
 
 def _doc_index() -> dict:
-    """Map NFC-normalised filename -> Arabic document text (filenames are unique
-    across all 30 document sets, so no set_id is needed in the key)."""
     global _DOC_INDEX
     if _DOC_INDEX is None:
+        zip_path = hf_hub_download(REPO, ZIP_FILENAME, repo_type="dataset")
         index = {}
-        for name in os.listdir(DOCS_DIR):
-            path = os.path.join(DOCS_DIR, name)
-            if not os.path.isfile(path):
-                continue
-            with open(path, encoding="utf-8") as f:
-                index[_norm_key(name)] = f.read()
+        with zipfile.ZipFile(zip_path) as z:
+            for info in z.infolist():
+                if info.is_dir():
+                    continue
+                parts = info.filename.split("/")
+                if len(parts) < 4:
+                    continue
+                set_id = _norm_key(parts[-2])
+                base = _norm_key(os.path.basename(info.filename))
+                index[(set_id, base)] = z.read(info).decode("utf-8", errors="replace")
         _DOC_INDEX = index
     return _DOC_INDEX
 
 
 def _load_documents(set_id: str, filenames) -> list[str]:
-    """Return the document texts in the given filename order."""
+    """Return the document texts for ``set_id`` in the given filename order."""
     if isinstance(filenames, str):
         filenames = filenames.split(";")
     index = _doc_index()
+    set_id = _norm_key(set_id)
     docs = []
     for name in filenames:
         name = _norm_key(name)
         if not name:
             continue
-        if name not in index:
-            raise KeyError(
-                f"AA-LCR-ar document not found in {DOCS_DIR}: set={set_id!r} file={name!r}"
-            )
-        docs.append(index[name])
+        key = (set_id, name)
+        if key not in index:
+            raise KeyError(f"AA-LCR-ar document not found in zip: set={set_id!r} file={name!r}")
+        docs.append(index[key])
     return docs
 
 
@@ -74,19 +80,12 @@ def _build_prompt(docs: list[str], question: str) -> str:
     return _PROMPT_TEMPLATE.format(documents_text=documents_text, question=question.strip())
 
 
-def load_dataset(**kwargs) -> datasets.DatasetDict:
-    """``custom_dataset`` hook: load the 100 Arabic QA rows from the bundled JSON."""
-    with open(QA_FILE, encoding="utf-8") as f:
-        rows = json.load(f)
-    return datasets.DatasetDict({"test": datasets.Dataset.from_list(rows)})
-
-
 def _add_fields(doc):
-    question = str(doc["question_ar"])
+    question = str(doc["question"])
     docs = _load_documents(doc["document_set_id"], doc["data_source_filenames"])
     doc["input"] = _build_prompt(docs, question)
     doc["question"] = question
-    doc["gold_answer"] = str(doc["answer_ar"])
+    doc["gold_answer"] = str(doc["answer"])
     return doc
 
 

@@ -911,12 +911,15 @@ def maybe_truncate(
 
     warning = f"Context length ({ctx_len}) + max_gen_toks ({max_gen_toks}) = {ctx_len + max_gen_toks} exceeds model's max length ({max_model_len})"
 
-    # Case 2: Do not adjust generation tokens, just truncate prompt
+    # Case 2: Do not adjust generation tokens, just truncate prompt.
+    # When max_gen_toks equals the model window, the reserved context budget is
+    # 0 and left-truncation (`tokens[-0:]`) is a no-op. Skip the warning unless
+    # tokens are actually dropped, otherwise every request logs a false overflow.
     if not shrink_gen_toks:
-        maybe_warn(f"{warning}. Truncating context from {side=}.", verbose)
-        return truncate_tokens(
-            tokens, max_model_len - max_gen_toks, side=side
-        ), max_gen_toks
+        truncated = truncate_tokens(tokens, max_model_len - max_gen_toks, side=side)
+        if len(truncated) < ctx_len:
+            maybe_warn(f"{warning}. Truncating context from {side=}.", verbose)
+        return truncated, max_gen_toks
 
     # Case 3: Prompt fits, but need to reduce max_tokens
     if (new_max := max_model_len - ctx_len) >= min_gen_toks:
@@ -949,8 +952,8 @@ def postprocess_generated_text(
         generation (str): The generated text to be processed.
         stop (list[str] | None): Stop sequence(s) to remove. Text is truncated
             at the first occurrence of any stop sequence.
-        think_end_token (str | None): Regex pattern marking end of thinking section.
-            If provided, returns only the text after the LAST match.
+        think_end_token (str | None): Token marking end of thinking section. If provided,
+            returns only the text after this token (discarding thinking content).
 
     Returns:
         str: The processed generation - text before stop sequences and after thinking sections.

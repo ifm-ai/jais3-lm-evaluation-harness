@@ -2,7 +2,7 @@
 
 **This is a fork of [EleutherAI/lm-evaluation-harness](https://github.com/EleutherAI/lm-evaluation-harness).** The `jais` branch starts from upstream `main` at `d6de8164` (`fix(basqueglue): load the f1 metric with evaluate`).
 
-[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.10256836.svg)](https://doi.org/10.5281/zenodo.10256836)
+![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.10256836.svg)
 
 ---
 
@@ -12,8 +12,33 @@ On top of that upstream commit:
 
 - **Generation metadata**. API `generate_until` results can carry response metadata on the request, in the response cache, and in logged samples.
 - **spBLEU and chrF++**. Register `spbleu` (sacreBLEU with the FLORES-200 tokenizer) and `chrfpp` as an alias of `chrf++`. Bootstrap stderr for both is capped at 100 iterations. `sacrebleu` is `>=2.3.0`.
-- **`base_url` on local chat**. `LocalChatCompletion` copies a `base_url` keyword into the request payload.
-- **`think_end_token`**. Documented as a regex; the text after the last match is kept.
+- `base_url` **on local chat**. `LocalChatCompletion` copies a `base_url` keyword into the request payload.
+- `think_end_token`. Documented as a regex; the text after the last match is kept.
+- **Context-length warning**. `maybe_truncate` warns only when tokens are actually dropped. When `max_gen_toks` equals the model window, left-truncation keeps the prompt and no longer logs a false overflow on every request.
+
+
+| Folder                           | Change                                                                                                                                                   |
+| -------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `DiacArMMLU`                     | New benchmark. Multiple-choice DiacArMMLU, loaded from `IFM/Dialectal-Arabic-MMLU_verified`.                                                             |
+| `DiacArMMLU_gen`                 | New benchmark. Generation variant of the same dataset.                                                                                                   |
+| `arabicmmlu_with_diacritics`     | New benchmark. Multiple-choice ArabicMMLU with diacritics, loaded from `go-inoue/ArabicMMLU_full`.                                                       |
+| `arabicmmlu_with_diacritics_gen` | New benchmark. Generation variant of the same dataset.                                                                                                   |
+| `aradice_gen`                    | New benchmark. Generate-until AraDiCE. Cultural tasks load `IFM/AraDiCE-Culture_verified`; the other subtasks load the public `QCRI/AraDiCE-*` datasets. |
+| `belebele_gen`                   | New benchmark. Generate-until Belebele, loaded from `facebook/belebele`.                                                                                 |
+| `gpqa_gen`                       | New benchmark. Generate-until GPQA Diamond, loaded from `Idavidrein/gpqa`.                                                                               |
+| `dialect_id`                     | New benchmark. Multiple-choice QADI dialect identification from local JSON. MADAR is not included.                                                       |
+| `dialect_id_gen`                 | New benchmark. Generation variant of those QADI tasks.                                                                                                   |
+| `arab_culture_gen`               | New benchmark. Generate-until Arab culture, loaded from `IFM/ArabCulture_verified`.                                                                      |
+| `arabic_linguistics_gen`         | New benchmark. Generation evaluation of i'rab and tashkeel, loaded from private `IFM/arabic_linguistics`.                                                |
+| `arabic_linguistics_mcq`         | New benchmark. Multiple-choice evaluation of the same dataset.                                                                                           |
+| `ifeval_ar`                      | New benchmark. Loads `inception42/Arabic-IFEval` at revision `48f2090`.                                                                                  |
+| `ara_ifbench`                    | New benchmark. Arabic instruction following, loaded from `MBZUAI-IFM/ara-ifbench-wildchat`.                                                              |
+| `arabic_gsm8k`                   | New benchmark. Loaded from `IFM/Arabic-gsm8k_verified`.                                                                                                  |
+| `aa_lcr`                         | New benchmark. English AA-LCR generation task, loaded from `ArtificialAnalysis/AA-LCR`.                                                                  |
+| `aa_lcr_ar`                      | New benchmark. Arabic AA-LCR generation task. Questions and documents load from private `IFM/AA-LCR-1.1-AR`.                                             |
+
+
+
 
 ### Tasks from `integrate-upstream` (`56a0f2ac`)
 
@@ -24,13 +49,15 @@ On top of that upstream commit:
 - `d6949705` — `gpqa_gen`
 - `61d6e70b` — QADI only, from `dialect_id` and `dialect_id_gen` (shared template and `utils.py` included; MADAR left out)
 - `ee1a06a8` — `arab_culture_gen`. `9b0fc9b8` points the suite at `IFM/ArabCulture_verified`.
-- `b1ac5923` — `arabic_linguistic`
+- `b1ac5923` — Arabic linguistic tasks, now `arabic_linguistics_gen` and `arabic_linguistics_mcq`
 - `6210d781` — `ifeval_ar`. `c3c20f9f` loads `inception42/Arabic-IFEval` at revision `48f2090` instead of a local jsonl.
 - `299785c5` — `ara_ifbench`
 - `afe694b8` — `arabic_gsm8k`. `9032eec5` points the suite at `IFM/Arabic-gsm8k_verified`.
 - `fcb2eedb` — `aa_lcr` and `aa_lcr_ar`
 
 ---
+
+
 
 ## Overview
 
@@ -58,6 +85,8 @@ git clone --depth 1 https://github.com/EleutherAI/lm-evaluation-harness
 cd lm-evaluation-harness
 pip install -e .
 ```
+
+
 
 ### Installing Model Backends
 
@@ -91,14 +120,18 @@ A detailed table of all optional extras is available at the end of this document
 
 ## Basic Usage
 
+
+
 ### Documentation
 
-| Guide | Description |
-|-------|-------------|
-| [CLI Reference](./docs/interface.md) | Command-line arguments and subcommands |
-| [Configuration Guide](./docs/config_files.md) | YAML config file format and examples |
-| [Python API](./docs/python-api.md) | Programmatic usage with `simple_evaluate()` |
-| [Task Guide](./lm_eval/tasks/README.md) | Available tasks and task configuration |
+
+| Guide                                         | Description                                 |
+| --------------------------------------------- | ------------------------------------------- |
+| [CLI Reference](./docs/interface.md)          | Command-line arguments and subcommands      |
+| [Configuration Guide](./docs/config_files.md) | YAML config file format and examples        |
+| [Python API](./docs/python-api.md)            | Programmatic usage with `simple_evaluate()` |
+| [Task Guide](./lm_eval/tasks/README.md)       | Available tasks and task configuration      |
+
 
 Use `lm-eval -h` to see available options, or `lm-eval run -h` for evaluation options.
 
@@ -107,6 +140,8 @@ List available tasks with:
 ```bash
 lm-eval ls tasks
 ```
+
+
 
 ### Hugging Face `transformers`
 
@@ -135,7 +170,7 @@ lm_eval --model hf \
 
 Models that are loaded via both `transformers.AutoModelForCausalLM` (autoregressive, decoder-only GPT style models) and `transformers.AutoModelForSeq2SeqLM` (such as encoder-decoder models like T5) in Huggingface are supported.
 
-Batch size selection can be automated by setting the  ```--batch_size``` flag to ```auto```. This will perform automatic detection of the largest batch size that will fit on your device. On tasks where there is a large difference between the longest and shortest example, it can be helpful to periodically recompute the largest batch size, to gain a further speedup. To do this, append ```:N``` to above flag to automatically recompute the largest batch size ```N``` times. For example, to recompute the batch size 4 times, the command would be:
+Batch size selection can be automated by setting the  `--batch_size` flag to `auto`. This will perform automatic detection of the largest batch size that will fit on your device. On tasks where there is a large difference between the longest and shortest example, it can be helpful to periodically recompute the largest batch size, to gain a further speedup. To do this, append `:N` to above flag to automatically recompute the largest batch size `N` times. For example, to recompute the batch size 4 times, the command would be:
 
 ```bash
 lm_eval --model hf \
@@ -147,6 +182,8 @@ lm_eval --model hf \
 
 > [!Note]
 > Just like you can provide a local path to `transformers.AutoModel`, you can also provide a local path to `lm_eval` via `--model_args pretrained=/path/to/model`
+
+
 
 #### Evaluating GGUF Models
 
@@ -170,6 +207,8 @@ lm_eval --model hf \
 > [!Tip]
 > Ensure the tokenizer path points to a valid Hugging Face tokenizer directory (e.g., containing tokenizer_config.json, vocab.json, etc.).
 
+
+
 #### Evaluating GGUF Models Served by llama.cpp
 
 The `gguf` model type evaluates models hosted by a [llama.cpp](https://github.com/ggml-org/llama.cpp) server (`llama-server`) through its OpenAI-compatible `/v1/completions` endpoint:
@@ -185,6 +224,8 @@ lm_eval --model gguf \
 - Requests are issued concurrently. The default degree of parallelism is auto-detected from the server's slot count (`/props` → `total_slots`, i.e. llama-server's `--parallel` setting); override it with `parallel=<N>`. `loglikelihood` requests are additionally pinned to slots via llama.cpp's `id_slot` parameter, with consecutive requests sharing a context (e.g. the candidate continuations of one multiple-choice question) assigned to the same slot so they reuse its cached prompt prefix. `generate_until` requests are left unpinned, since the server's dynamic idle-slot assignment load-balances variable-length generations better.
 - `loglikelihood` is implemented via exact teacher forcing: llama.cpp ignores `echo` and never returns prompt logprobs, so the continuation is tokenized with the server's `/tokenize` endpoint (context and continuation encoded separately, matching the HF backend), and each continuation token is scored with its natural prefix as a token-id prompt plus a `logit_bias` that forces the server to sample it. llama.cpp reports the forced token's *pre-sampling* logprob and an unbiased `top_logprobs`, yielding loglikelihoods that match the HF backend to within quantization noise. (A naive alternative — forcing the continuation with a GBNF grammar — does *not* work: grammar-constrained decoding can pick a fragmented tokenization whose logprobs are not the natural-tokenization loglikelihoods, which systematically deflates scores.)
 - `loglikelihood_rolling` (perplexity tasks such as wikitext) is not implemented for this model type.
+
+
 
 #### Multi-GPU Evaluation with Hugging Face `accelerate`
 
@@ -206,7 +247,7 @@ For cases where your model can fit on a single GPU, this allows you to evaluate 
 
 The second way of using `accelerate` for multi-GPU evaluation is when your model is *too large to fit on a single GPU.*
 
-In this setting, run the library *outside the `accelerate` launcher*, but passing `parallelize=True` to `--model_args` as follows:
+In this setting, run the library *outside the* `accelerate` *launcher*, but passing `parallelize=True` to `--model_args` as follows:
 
 ```bash
 lm_eval --model hf \
@@ -236,7 +277,7 @@ accelerate launch --multi_gpu --num_processes {nb_of_copies_of_your_model} \
 
 To learn more about model parallelism and how to use it with the `accelerate` library, see the [accelerate documentation](https://huggingface.co/docs/transformers/v4.15.0/en/parallelism)
 
-**Warning: We do not natively support multi-node evaluation using the `hf` model type! Please reference [our GPT-NeoX library integration](https://github.com/EleutherAI/gpt-neox/blob/main/eval.py) for an example of code in which a custom multi-machine evaluation script is written.**
+**Warning: We do not natively support multi-node evaluation using the** `hf` **model type! Please reference [our GPT-NeoX library integration](https://github.com/EleutherAI/gpt-neox/blob/main/eval.py) for an example of code in which a custom multi-machine evaluation script is written.**
 
 **Note: we do not currently support multi-node evaluations natively, and advise using either an externally hosted server to run inference requests against, or creating a custom integration with your distributed framework [as is done for the GPT-NeoX library](https://github.com/EleutherAI/gpt-neox/blob/main/eval_tasks/eval_adapter.py).**
 
@@ -257,6 +298,8 @@ torchrun --nproc-per-node=4 -m lm_eval \
 - `tp_plan` and `parallelize=True` are mutually exclusive — use one or the other.
 - The number of key-value heads in the model must be divisible by `--nproc-per-node` (the TP degree).
 - Requires PyTorch >= 2.4 and a `transformers` version that exposes a TP plan for the model (v4.47+).
+
+
 
 ### Steered Hugging Face `transformers` models
 
@@ -303,6 +346,8 @@ lm_eval --model steered \
     --batch_size 8
 ```
 
+
+
 ### NVIDIA `nemo` models
 
 [NVIDIA NeMo Framework](https://github.com/NVIDIA/NeMo) is a generative AI framework built for researchers and pytorch developers working on language models.
@@ -327,11 +372,13 @@ mkdir MY_MODEL
 tar -xvf MY_MODEL.nemo -c MY_MODEL
 ```
 
+
+
 #### Multi-GPU evaluation with NVIDIA `nemo` models
 
 By default, only one GPU is used. But we do support either data replication or tensor/pipeline parallelism during evaluation, on one node.
 
-1) To enable data replication, set the `model_args` of `devices` to the number of data replicas to run. For example, the command to run 8 data replicas over 8 GPUs is:
+1. To enable data replication, set the `model_args` of `devices` to the number of data replicas to run. For example, the command to run 8 data replicas over 8 GPUs is:
 
 ```bash
 torchrun --nproc-per-node=8 --no-python lm_eval \
@@ -341,7 +388,7 @@ torchrun --nproc-per-node=8 --no-python lm_eval \
     --batch_size 32
 ```
 
-1) To enable tensor and/or pipeline parallelism, set the `model_args` of `tensor_model_parallel_size` and/or `pipeline_model_parallel_size`. In addition, you also have to set up `devices` to be equal to the product of `tensor_model_parallel_size` and/or `pipeline_model_parallel_size`. For example, the command to use one node of 4 GPUs with tensor parallelism of 2 and pipeline parallelism of 2 is:
+1. To enable tensor and/or pipeline parallelism, set the `model_args` of `tensor_model_parallel_size` and/or `pipeline_model_parallel_size`. In addition, you also have to set up `devices` to be equal to the product of `tensor_model_parallel_size` and/or `pipeline_model_parallel_size`. For example, the command to use one node of 4 GPUs with tensor parallelism of 2 and pipeline parallelism of 2 is:
 
 ```bash
 torchrun --nproc-per-node=4 --no-python lm_eval \
@@ -360,6 +407,7 @@ Not supported yet: multi-node evaluation and combinations of data replication wi
 [Megatron-LM](https://github.com/NVIDIA/Megatron-LM) is NVIDIA's large-scale transformer training framework. This backend allows direct evaluation of Megatron-LM checkpoints without conversion.
 
 **Requirements:**
+
 - Megatron-LM must be installed or accessible via `MEGATRON_PATH` environment variable
 - PyTorch with CUDA support
 
@@ -380,21 +428,27 @@ lm_eval --model megatron_lm \
 ```
 
 **Supported checkpoint formats:**
+
 - Standard Megatron checkpoints (`model_optim_rng.pt`)
 - Distributed checkpoints (`.distcp` format, auto-detected)
+
+
 
 #### Parallelism Modes
 
 The Megatron-LM backend supports the following parallelism modes:
 
-| Mode | Configuration | Description |
-|------|---------------|-------------|
-| Single GPU | `devices=1` (default) | Standard single GPU evaluation |
-| Data Parallelism | `devices>1, TP=1` | Each GPU has a full model replica, data is distributed |
-| Tensor Parallelism | `TP == devices` | Model layers are split across GPUs |
-| Expert Parallelism | `EP == devices, TP=1` | For MoE models, experts are distributed across GPUs |
+
+| Mode               | Configuration         | Description                                            |
+| ------------------ | --------------------- | ------------------------------------------------------ |
+| Single GPU         | `devices=1` (default) | Standard single GPU evaluation                         |
+| Data Parallelism   | `devices>1, TP=1`     | Each GPU has a full model replica, data is distributed |
+| Tensor Parallelism | `TP == devices`       | Model layers are split across GPUs                     |
+| Expert Parallelism | `EP == devices, TP=1` | For MoE models, experts are distributed across GPUs    |
+
 
 > [!Note]
+>
 > - Pipeline Parallelism (PP > 1) is not currently supported.
 > - Expert Parallelism (EP) cannot be combined with Tensor Parallelism (TP).
 
@@ -433,6 +487,8 @@ lm_eval --model megatron_lm \
 > [!Note]
 > The `--use-checkpoint-args` flag is enabled by default, which loads model architecture parameters from the checkpoint. For checkpoints converted via Megatron-Bridge, this typically includes all necessary model configuration.
 
+
+
 #### Multi-GPU evaluation with OpenVINO models
 
 Pipeline parallelism during evaluation is supported with OpenVINO models
@@ -445,6 +501,8 @@ lm_eval --model openvino \
     --model_args pretrained=<path_to_ov_model>,pipeline_parallel=True \
     --device HETERO:GPU.1,GPU.0
 ```
+
+
 
 ### Tensor + Data Parallel and Optimized Inference with `vLLM`
 
@@ -470,6 +528,8 @@ vLLM occasionally differs in output from Huggingface. We treat Huggingface as th
 > [!Tip]
 > Passing `max_model_len=4096` or some other reasonable default to vLLM through model args may cause speedups or prevent out-of-memory errors when trying to use auto batch size, such as for Mistral-7B-v0.1 which defaults to a maximum length of 32k.
 
+
+
 ### Tensor + Data Parallel and Fast Offline Batching Inference with `SGLang`
 
 We support SGLang for efficient offline batch inference. Its **[Fast Backend Runtime](https://docs.sglang.ai/index.html)** delivers high performance through optimized memory management and parallel processing techniques. Key features include tensor parallelism, continuous batching, and support for various quantization methods (FP8/INT4/AWQ/GPTQ).
@@ -477,7 +537,7 @@ We support SGLang for efficient offline batch inference. Its **[Fast Backend Run
 To use SGLang as the evaluation backend, please **install it in advance** via SGLang documents [here](https://docs.sglang.io/get_started/install.html#install-sglang).
 
 > [!Tip]
-> Due to the installing method of [`Flashinfer`](https://docs.flashinfer.ai/)-- a fast attention kernel library, we don't include the dependencies of `SGLang` within [pyproject.toml](pyproject.toml). Note that the `Flashinfer` also has some requirements on `torch` version.
+> Due to the installing method of `[Flashinfer](https://docs.flashinfer.ai/)`-- a fast attention kernel library, we don't include the dependencies of `SGLang` within [pyproject.toml](pyproject.toml). Note that the `Flashinfer` also has some requirements on `torch` version.
 
 SGLang's server arguments are slightly different from other backends, see [here](https://docs.sglang.io/advanced_features/server_arguments.html) for more information. We provide an example of the usage here:
 
@@ -495,9 +555,11 @@ lm_eval --model sglang \
 > 2. Lower KV cache pool memory usage by adjusting `mem_fraction_static` - Add to your model arguments for example `--model_args pretrained=...,mem_fraction_static=0.7`.
 > 3. Increase tensor parallel size `tp_size` (if using multiple GPUs).
 
+
+
 ### ONNX Runtime GenAI
 
-We support **ONNX Runtime GenAI** for cross-platform evaluation of ONNX LLMs produced by the [ONNX Runtime GenAI *Model Builder*](https://onnxruntime.ai/docs/genai/howto/build-model.html). Unlike the [Windows ML](#windows-ml) backend, this backend runs on Linux, macOS, and Windows and selects execution providers with the cross-platform `og.Config` API (CPU, CUDA, DirectML, WebGPU, and AMD NPU via VitisAI/RyzenAI).
+We support **ONNX Runtime GenAI** for cross-platform evaluation of ONNX LLMs produced by the [ONNX Runtime GenAI *Model Builder](https://onnxruntime.ai/docs/genai/howto/build-model.html)*. Unlike the [Windows ML](#windows-ml) backend, this backend runs on Linux, macOS, and Windows and selects execution providers with the cross-platform `og.Config` API (CPU, CUDA, DirectML, WebGPU, and AMD NPU via VitisAI/RyzenAI).
 
 Install the backend along with the execution-provider wheel that matches your hardware:
 
@@ -522,6 +584,8 @@ The `pretrained` path is a Model Builder output directory (containing `genai_con
 
 > [!Note]
 > Supported architectures are whatever the Model Builder supports (Llama, Phi, Qwen, Gemma, Mistral, Granite, ChatGLM, …). Inference is batch-size 1 and runs one execution provider per run.
+
+
 
 ### ONNX Runtime
 
@@ -551,12 +615,14 @@ Because both ONNX backends share one scoring implementation and end up in the sa
 >
 > The installed `onnxruntime` must be new enough to load the contrib-op schemas your Model Builder version emitted. An older runtime can reject the graph outright — for example a 12-input `GroupQueryAttention` fails to load on ONNX Runtime 1.22.
 
+
+
 ### Windows ML
 
 We support **Windows ML** for hardware-accelerated inference on Windows platforms. This enables evaluation on CPU, GPU, and **NPU (Neural Processing Unit)** devices.
 
 Windows ML?
-https://learn.microsoft.com/en-us/windows/ai/new-windows-ml/overview
+[https://learn.microsoft.com/en-us/windows/ai/new-windows-ml/overview](https://learn.microsoft.com/en-us/windows/ai/new-windows-ml/overview)
 
 To use Windows ML, install the required dependencies:
 
@@ -578,6 +644,8 @@ lm_eval --model winml \
 
 > [!Note]
 > To run an ONNX Runtime GenAI model on the target device, you MUST convert the original model to that vendor and device type. Converted models won't work / work well on other vendor or device types. To learn more on model conversion, please visit [Microsoft AI Tool Kit](https://code.visualstudio.com/docs/intelligentapps/modelconversion)
+
+
 
 ### Model APIs and Inference Servers
 
@@ -603,18 +671,19 @@ lm_eval --model local-completions --tasks gsm8k --model_args model=facebook/opt-
 
 Note that for externally hosted models, configs such as `--device` which relate to where to place a local model should not be used and do not function. Just like you can use `--model_args` to pass arbitrary arguments to the model constructor for local models, you can use it to pass arbitrary arguments to the model API for hosted models. See the documentation of the hosting service for information on what arguments they support.
 
+
 | API or Inference Server                                                                                                   | Implemented?                                                                                            | `--model <xxx>` name                                  | Models supported:                                                                                                                                               | Request Types:                                                                 |
-|---------------------------------------------------------------------------------------------------------------------------|---------------------------------------------------------------------------------------------------------|-------------------------------------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------|--------------------------------------------------------------------------------|
+| ------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------- | ----------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------ |
 | OpenAI Completions                                                                                                        | :heavy_check_mark:                                                                                      | `openai-completions`, `local-completions`             | All OpenAI Completions API models                                                                                                                               | `generate_until`, `loglikelihood`, `loglikelihood_rolling`                     |
 | OpenAI ChatCompletions                                                                                                    | :heavy_check_mark:                                                                                      | `openai-chat-completions`, `local-chat-completions`   | [All ChatCompletions API models](https://platform.openai.com/docs/guides/gpt)                                                                                   | `generate_until` (no logprobs)                                                 |
 | Anthropic                                                                                                                 | :heavy_check_mark:                                                                                      | `anthropic`                                           | [Supported Anthropic Engines](https://docs.anthropic.com/claude/reference/selecting-a-model)                                                                    | `generate_until` (no logprobs)                                                 |
 | Anthropic Chat                                                                                                            | :heavy_check_mark:                                                                                      | `anthropic-chat`, `anthropic-chat-completions`        | [Supported Anthropic Engines](https://docs.anthropic.com/claude/docs/models-overview)                                                                           | `generate_until` (no logprobs)                                                 |
 | [LiteLLM](https://github.com/BerriAI/litellm) (gateway to 100+ providers)                                                 | :heavy_check_mark:                                                                                      | `litellm`, `litellm-chat`, `litellm-chat-completions` | [All LiteLLM-supported providers](https://docs.litellm.ai/docs/providers)                                                                                       | `generate_until` (no logprobs)                                                 |
 | Textsynth                                                                                                                 | :heavy_check_mark:                                                                                      | `textsynth`                                           | [All supported engines](https://textsynth.com/documentation.html#engines)                                                                                       | `generate_until`, `loglikelihood`, `loglikelihood_rolling`                     |
-| Cohere                                                                                                                    | [:hourglass: - blocked on Cohere API bug](https://github.com/EleutherAI/lm-evaluation-harness/pull/395) | N/A                                                   | [All `cohere.generate()` engines](https://docs.cohere.com/docs/models)                                                                                          | `generate_until`, `loglikelihood`, `loglikelihood_rolling`                     |
+| Cohere                                                                                                                    | [:hourglass: - blocked on Cohere API bug](https://github.com/EleutherAI/lm-evaluation-harness/pull/395) | N/A                                                   | [All](https://docs.cohere.com/docs/models) `cohere.generate()` [engines](https://docs.cohere.com/docs/models)                                                   | `generate_until`, `loglikelihood`, `loglikelihood_rolling`                     |
 | [Llama.cpp](https://github.com/ggerganov/llama.cpp) (via [llama-cpp-python](https://github.com/abetlen/llama-cpp-python)) | :heavy_check_mark:                                                                                      | `gguf`, `ggml`                                        | [All models supported by llama.cpp](https://github.com/ggerganov/llama.cpp)                                                                                     | `generate_until`, `loglikelihood`, (perplexity evaluation not yet implemented) |
 | vLLM                                                                                                                      | :heavy_check_mark:                                                                                      | `vllm`                                                | [Most HF Causal Language Models](https://docs.vllm.ai/en/latest/models/supported_models.html)                                                                   | `generate_until`, `loglikelihood`, `loglikelihood_rolling`                     |
-| Mamba                                                                                                                     | :heavy_check_mark:                                                                                      | `mamba_ssm`                                           | [Mamba architecture Language Models via the `mamba_ssm` package](https://huggingface.co/state-spaces)                                                           | `generate_until`, `loglikelihood`, `loglikelihood_rolling`                     |
+| Mamba                                                                                                                     | :heavy_check_mark:                                                                                      | `mamba_ssm`                                           | [Mamba architecture Language Models via the](https://huggingface.co/state-spaces) `mamba_ssm` [package](https://huggingface.co/state-spaces)                    | `generate_until`, `loglikelihood`, `loglikelihood_rolling`                     |
 | Huggingface Optimum (Causal LMs)                                                                                          | :heavy_check_mark:                                                                                      | `openvino`                                            | Any decoder-only AutoModelForCausalLM converted with Huggingface Optimum into OpenVINO™ Intermediate Representation (IR) format                                 | `generate_until`, `loglikelihood`, `loglikelihood_rolling`                     |
 | Huggingface Optimum-intel IPEX (Causal LMs)                                                                               | :heavy_check_mark:                                                                                      | `ipex`                                                | Any decoder-only AutoModelForCausalLM                                                                                                                           | `generate_until`, `loglikelihood`, `loglikelihood_rolling`                     |
 | Huggingface Optimum-habana (Causal LMs)                                                                                   | :heavy_check_mark:                                                                                      | `habana`                                              | Any decoder-only AutoModelForCausalLM                                                                                                                           | `generate_until`, `loglikelihood`, `loglikelihood_rolling`                     |
@@ -622,10 +691,13 @@ Note that for externally hosted models, configs such as `--device` which relate 
 | NVIDIA NeMo                                                                                                               | :heavy_check_mark:                                                                                      | `nemo_lm`                                             | [All supported models](https://docs.nvidia.com/nemo-framework/user-guide/24.09/nemotoolkit/core/core.html#nemo-models)                                          | `generate_until`, `loglikelihood`, `loglikelihood_rolling`                     |
 | NVIDIA Megatron-LM                                                                                                        | :heavy_check_mark:                                                                                      | `megatron_lm`                                         | [Megatron-LM GPT models](https://github.com/NVIDIA/Megatron-LM) (standard and distributed checkpoints)                                                          | `generate_until`, `loglikelihood`, `loglikelihood_rolling`                     |
 | Watsonx.ai                                                                                                                | :heavy_check_mark:                                                                                      | `watsonx_llm`                                         | [Supported Watsonx.ai Engines](https://dataplatform.cloud.ibm.com/docs/content/wsj/analyze-data/fm-models.html?context=wx)                                      | `generate_until` `loglikelihood`                                               |
-| ONNX Runtime GenAI                                                                                                        | :heavy_check_mark:                                                                                      | `onnxruntime-genai`                                   | [ONNX models in GenAI format](https://onnxruntime.ai/docs/genai/howto/build-model.html) (cross-platform: CPU/CUDA/DirectML/NPU)                                  | `generate_until`, `loglikelihood`, `loglikelihood_rolling`                     |
-| ONNX Runtime                                                                                                              | :heavy_check_mark:                                                                                      | `onnxruntime`                                         | [ONNX models in GenAI format](https://onnxruntime.ai/docs/genai/howto/build-model.html) via a raw `InferenceSession` (adds ROCm/MIGraphX)                        | `loglikelihood`, `loglikelihood_rolling`                                       |
+| ONNX Runtime GenAI                                                                                                        | :heavy_check_mark:                                                                                      | `onnxruntime-genai`                                   | [ONNX models in GenAI format](https://onnxruntime.ai/docs/genai/howto/build-model.html) (cross-platform: CPU/CUDA/DirectML/NPU)                                 | `generate_until`, `loglikelihood`, `loglikelihood_rolling`                     |
+| ONNX Runtime                                                                                                              | :heavy_check_mark:                                                                                      | `onnxruntime`                                         | [ONNX models in GenAI format](https://onnxruntime.ai/docs/genai/howto/build-model.html) via a raw `InferenceSession` (adds ROCm/MIGraphX)                       | `loglikelihood`, `loglikelihood_rolling`                                       |
 | Windows ML                                                                                                                | :heavy_check_mark:                                                                                      | `winml`                                               | [ONNX models in GenAI format](https://code.visualstudio.com/docs/intelligentapps/modelconversion)                                                               | `generate_until`, `loglikelihood`, `loglikelihood_rolling`                     |
 | [Your local inference server!](docs/API_guide.md)                                                                         | :heavy_check_mark:                                                                                      | `local-completions` or `local-chat-completions`       | Support for OpenAI API-compatible servers, with easy customization for other APIs.                                                                              | `generate_until`, `loglikelihood`, `loglikelihood_rolling`                     |
+
+
+
 
 Models which do not supply logits or logprobs can be used with tasks of type `generate_until` only, while local models, or APIs that supply logprobs/logits of their prompts, can be run on all task types: `generate_until`, `loglikelihood`, `loglikelihood_rolling`, and `multiple_choice`.
 
@@ -633,6 +705,8 @@ For more information on the different task `output_types` and model request type
 
 > [!Note]
 > For best performance with closed chat model APIs such as Anthropic Claude 3 and GPT-4, we recommend carefully looking at a few sample outputs using `--limit 10` first to confirm answer extraction and scoring on generative tasks is performing as expected. providing `system="<some system prompt here>"` within `--model_args` for anthropic-chat-completions, to instruct the model what format to respond in, may be useful.
+
+
 
 ### Other Frameworks
 
@@ -645,7 +719,7 @@ To create your own custom integration you can follow instructions from [this tut
 > [!Note]
 > For tasks unsuitable for direct evaluation — either due risks associated with executing untrusted code or complexities in the evaluation process — the `--predict_only` flag is available to obtain decoded generations for post-hoc evaluation.
 
-If you have a Metal compatible Mac, you can run the eval harness using the MPS back-end by replacing `--device cuda:0` with `--device mps` (requires PyTorch version 2.1 or higher). **Note that the PyTorch MPS backend is still in early stages of development, so correctness issues or unsupported operations may exist. If you observe oddities in model performance on the MPS back-end, we recommend first checking that a forward pass of your model on `--device cpu` and `--device mps` match.**
+If you have a Metal compatible Mac, you can run the eval harness using the MPS back-end by replacing `--device cuda:0` with `--device mps` (requires PyTorch version 2.1 or higher). **Note that the PyTorch MPS backend is still in early stages of development, so correctness issues or unsupported operations may exist. If you observe oddities in model performance on the MPS back-end, we recommend first checking that a forward pass of your model on** `--device cpu` **and** `--device mps` **match.**
 
 > [!Note]
 > You can inspect what the LM inputs look like by running the following command:
@@ -668,6 +742,8 @@ lm_eval --model openai \
     --tasks lambada_openai,hellaswag \
     --check_integrity
 ```
+
+
 
 ## Advanced Usage Tips
 
@@ -797,7 +873,7 @@ The integration provide functionalities
 
 First you'll need to install the lm_eval[wandb] package extra. Do `pip install lm_eval[wandb]`.
 
-Authenticate your machine with an your unique W&B token. Visit https://wandb.ai/authorize to get one. Do `wandb login` in your command line terminal.
+Authenticate your machine with an your unique W&B token. Visit [https://wandb.ai/authorize](https://wandb.ai/authorize) to get one. Do `wandb login` in your command line terminal.
 
 Run eval harness as usual with a `wandb_args` flag. Use this flag to provide arguments for initializing a wandb run ([wandb.init](https://docs.wandb.ai/ref/python/init)) as comma separated string arguments.
 
@@ -828,7 +904,9 @@ To get started with development, first clone the repository and install the dev 
 git clone https://github.com/EleutherAI/lm-evaluation-harness
 cd lm-evaluation-harness
 pip install -e ".[dev,hf]"
-````
+```
+
+
 
 ### Implementing new tasks
 
@@ -857,30 +935,35 @@ Extras dependencies can be installed via `pip install -e ".[NAME]"`
 
 These extras install dependencies required to run specific model backends:
 
-| NAME           | Description                                      |
-|----------------|--------------------------------------------------|
-| hf             | HuggingFace Transformers (torch, transformers, accelerate, peft) |
-| vllm           | vLLM fast inference                              |
-| api            | API models (OpenAI, Anthropic, local servers)    |
-| gptq           | AutoGPTQ quantized models                        |
-| gptqmodel      | GPTQModel quantized models                       |
-| ibm_watsonx_ai | IBM watsonx.ai models                            |
-| ipex           | Intel IPEX backend                               |
-| habana         | Intel Gaudi backend                              |
-| optimum        | Intel OpenVINO models                            |
-| neuronx        | AWS Inferentia2 instances                        |
-| onnxruntime-genai | ONNX Runtime GenAI (cross-platform) - CPU/CUDA/DirectML/NPU |
-| onnxruntime    | ONNX Runtime raw session - adds ROCm/MIGraphX    |
-| winml          | Windows ML (ONNX Runtime GenAI) - CPU/GPU/NPU    |
-| sparsify       | Sparsify model steering                          |
-| sae_lens       | SAELens model steering                           |
+
+| NAME              | Description                                                      |
+| ----------------- | ---------------------------------------------------------------- |
+| hf                | HuggingFace Transformers (torch, transformers, accelerate, peft) |
+| vllm              | vLLM fast inference                                              |
+| api               | API models (OpenAI, Anthropic, local servers)                    |
+| gptq              | AutoGPTQ quantized models                                        |
+| gptqmodel         | GPTQModel quantized models                                       |
+| ibm_watsonx_ai    | IBM watsonx.ai models                                            |
+| ipex              | Intel IPEX backend                                               |
+| habana            | Intel Gaudi backend                                              |
+| optimum           | Intel OpenVINO models                                            |
+| neuronx           | AWS Inferentia2 instances                                        |
+| onnxruntime-genai | ONNX Runtime GenAI (cross-platform) - CPU/CUDA/DirectML/NPU      |
+| onnxruntime       | ONNX Runtime raw session - adds ROCm/MIGraphX                    |
+| winml             | Windows ML (ONNX Runtime GenAI) - CPU/GPU/NPU                    |
+| sparsify          | Sparsify model steering                                          |
+| sae_lens          | SAELens model steering                                           |
+
+
+
 
 ### Task Dependencies
 
 These extras install dependencies required for specific evaluation tasks:
 
+
 | NAME                 | Description                    |
-|----------------------|--------------------------------|
+| -------------------- | ------------------------------ |
 | tasks                | All task-specific dependencies |
 | acpbench             | ACP Bench tasks                |
 | audiolm_qwen         | Qwen2 audio models             |
@@ -891,16 +974,23 @@ These extras install dependencies required for specific evaluation tasks:
 | multilingual         | Multilingual tokenizers        |
 | ruler                | RULER tasks                    |
 
+
+
+
 ### Development & Utilities
 
-| NAME          | Description                    |
-|---------------|--------------------------------|
-| dev           | Linting & contributions        |
-| hf_transfer   | Speed up HF downloads          |
-| sentencepiece | Sentencepiece tokenizer        |
-| unitxt        | Unitxt tasks                   |
-| wandb         | Weights & Biases logging       |
-| zeno          | Zeno result visualization      |
+
+| NAME          | Description               |
+| ------------- | ------------------------- |
+| dev           | Linting & contributions   |
+| hf_transfer   | Speed up HF downloads     |
+| sentencepiece | Sentencepiece tokenizer   |
+| unitxt        | Unitxt tasks              |
+| wandb         | Weights & Biases logging  |
+| zeno          | Zeno result visualization |
+
+
+
 
 ## Cite as
 
@@ -916,3 +1006,4 @@ These extras install dependencies required for specific evaluation tasks:
   url          = {https://zenodo.org/records/12608602}
 }
 ```
+
